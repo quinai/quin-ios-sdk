@@ -26,6 +26,7 @@ public struct Display: Decodable {
     public let position: String?
     public let fields:  Dictionary<String,DisplayField>?
     public let properties: Dictionary<String,DisplayProperty>?
+    public let products: Dictionary<String, ProductResponse>?
 }
 
 public struct DisplayField: Decodable {
@@ -34,6 +35,8 @@ public struct DisplayField: Decodable {
     public let color: String?
     public let url: String?
     public let position: String?
+    public let textColor: String?
+    public let styleResponse: StyleResponse?
 }
 
 public struct DisplayProperty: Decodable {
@@ -42,4 +45,24 @@ public struct DisplayProperty: Decodable {
     public let placeholder: String?
     public let required: String?
     public let options: Array<String>?
+}
+
+public struct StyleResponse: Decodable {
+    public let textColor: String?
+    public let backgroundColor: String?
+    public let position: String?
+    public let fontFamily: String?
+    public let fontSize: String?
+    public let fontWeight: String?
+    public let textAlign: String?
+    
+}
+
+public struct ProductResponse: Decodable {
+    public let title:String?
+    public let image: String?
+    public let url: String?
+    public let price: String?
+    public let salesPrice: String?
+    public let productPostCode: String?
 }
