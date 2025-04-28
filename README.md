@@ -31,11 +31,18 @@ Then import it to your project by following lines.
 import Quin
 ```
 
-After importing the library you need to initialize it before sending events. In order to initialize sdk first set configs and thens set the user with the following lines.
+After importing the library you need to create a Quin object before sending events. In order to initialize an object:
 
 ```swift
-Quin.sharedInstance.setConfig(apiKey: "api-key", domain: "domain", enableLogging: false)
-Quin.sharedInstance.setUser(googleClientId: "client-id") 
+let quin = Quin.getInstance() // with default queue
+let quin = Quin.getInstace(queue: DispatchQueue(label: "your-label"))
+```
+
+After creating the object you need to initialize it before sending events. In order to initialize sdk first set configs and thens set the user with the following lines.
+
+```swift
+quin.setConfig(apiKey: "api-key", domain: "domain", enableLogging: false)
+quin.setUser(googleClientId: "client-id") 
 ```
 
 > enableLogging option is used to print logs to the console. 
@@ -75,56 +82,70 @@ Item(id: "1250353863",
 Action is the structure that tracker or send functions returns. Action holds the properties such as category, promotion code, display etc.
 Resulted action which has the following structure can be used to show pop-ups on the screen.
 
-```kotlin
+```swift
 Action {
-   actionId: String?
-   actionType: String?
-   category: String?
-   categoryId: String?
-   promotionCode: String?
-   custom: Boolean?
-   display: Display?
-   html: String?
+    public let actionId: String?
+    public let actionType:String?
+    public let category: String?
+    public let categoryId: String?
+    public let promotionCode: String?
+    public let custom: Bool?
+    public let display: Display?
+    public let html : String?
 }
 ```
 
 ### Display
 Display structure holds the actions display properties that is required to draw the pop-up.
 
-```kotlin
+```swift
 Display {
-    paddle: Boolean?
-    position: String?
-    fields: Dictionary<String,DisplayField>?
-    properties: Dictionary<String,DisplayProperty>?
+    public let paddle: Bool?
+    public let position: String?
+    public let fields:  Dictionary<String,DisplayField>?
+    public let properties: Dictionary<String,DisplayProperty>?
+    public let products: Dictionary<String, ProductResponse>?
 }
 ```
 
 ### DisplayField
 DisplayField structure holds the field entity of an display object.
 
-```kotlin
+```swift
 DisplayField {
-    name: String?
-    text: String?
-    color: String?
-    url: String?
-    position: String?
+    public let name: String?
+    public let text: String?
+    public let color: String?
+    public let url: String?
+    public let position: String?
+    public let textColor: String?
+    public let styleResponse: StyleResponse?
 }
 ```
 
 ### DisplayProperty
 DisplayProperty structure holds the property entity of an display object.
 
-```kotlin
+```swift
 DisplayProperty {
-    propertyType: String?
-    label: String?
-    placeholder: String?
-    required: String?
-    options: Array<String>?
+    public let propertyType: String?
+    public let label: String?
+    public let placeholder: String?
+    public let required: String?
+    public let options: Array<String>?
 }
 ```
+### StyleResponse
+StyleResponse {
+    public let textColor: String?
+    public let backgroundColor: String?
+    public let position: String?
+    public let fontFamily: String?
+    public let fontSize: String?
+    public let fontWeight: String?
+    public let textAlign: String?
+    
+}
 
 ***
 
@@ -171,7 +192,7 @@ sendAddToCartServiceEvent(item: Item?, quantity: Int, completion:@escaping Actio
 All predefined functions above are defined inside e-commerce interface to create an abstraction to users. You can simply send events from interface variable inside Quin singleton class. Following lines explain how to use them. 
 
 ```swift
-Quin.eCommerce.sendFilterEvent() { action in
+quin.eCommerce().sendFilterEvent() { action in
     print(action ?? "action is nil")
 }
 ```
@@ -217,8 +238,8 @@ let event = Event.eCommerce.pageViewHomeEvent()
 
 * Takes item as Item struct and quantity as integer. Returns Event structure filled with add to cart, item, and quantity data.
 > Item can be nil.
-```kotlin
-let event = Event.eCommerce.addToCartListingEvent(item: <Item>, quantity: 2)
+```swift
+let event = Event.eCommerce.addToCartListingEvent(item: myItem, quantity: 2)
 ```
 
 Also adding custom attributes to those events are possible by function ```withCustomAttribute(key: String, value: String)```. Following example shows how to use it.
@@ -230,8 +251,9 @@ val event = Event.eCommerce.pageViewHomeEvent().withCustomAttribute(key: "color"
 After creating the event you can send them to the Quin services using ```track(event: Event, completion:@escaping ActionHandler)```. Following line shows how to use it.
 
 ```swift
+Quin quin = Quin.getInstance(queue: DispatchQueue)
 let event = Event.eCommerce.pageViewHomeEvent()
-Quin.track(event = event) { action in
+quin.track(event: event) { action in
     print(action ?? "action is nil")
 }
 ```
@@ -245,7 +267,7 @@ let event = Event(category : "\(EventCategory.home)",
                   label : "custom label", 
                   url : "ex-screen", 
                   item : item)
-Quin.track(event = event) { action in
+quin.track(event = event) { action in
     print(action ?? "action is nil")
 }
 ```
@@ -314,6 +336,7 @@ Action: {
 You can use this action as a reference and use it to draw pop-ups etc. In order to send test event you can use Quin singleton's ```test(event: Event, completion:@escaping ActionHandler)```function. Following lines shows how to do this.
 
 ```swift
+
 let item = Item(
     id : "testId",
     name : "testName",
@@ -328,7 +351,7 @@ val event = Event(
     url : "ex-screen",
     item : item)
     .withCustomAttribute(key: "color", value: "blue")
-Quin.test(event: event) { action in
+quin.eCommerce().sendTestEvent(event: event) { action in
     // Use action variable here
 }
 ```

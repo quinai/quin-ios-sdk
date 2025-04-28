@@ -1,6 +1,6 @@
 import Foundation
 
-public typealias ResponseHandler = (Response?) -> Void
+public typealias ResponseHandler = (Result<Response, Error>) -> Void
 
 
 public  struct Response: Decodable {

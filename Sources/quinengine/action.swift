@@ -2,11 +2,11 @@ import Foundation
 
 public typealias ActionHandler = (Action?) -> Void
 
-public enum ActionType: Decodable {
+public enum ActionType: String,Decodable {
     case  form, discount, upsell, badge, information
 }
 
-public enum ActionPosition: Decodable {
+public enum ActionPosition: String,Decodable {
     case center, topLeft, topRight, bottomLeft, bottomRight
 }
 
