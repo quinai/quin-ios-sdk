@@ -1,5 +1,12 @@
 import Foundation
 
+enum HttpError: Error{
+    case invalidRequest
+    case invalidResponse
+    case httpError(statusCode: Int)
+    case noData
+}
+
 struct Http {
     private static var configuration = HttpConfiguration()
     
@@ -16,6 +23,7 @@ struct Http {
     func post(path: String, body: Data? = nil, completion: @escaping ResponseHandler) {
         guard let request = request(path: path, method: "POST", body: body) else{
             Logger.sharedInstance.log(msg:"quin http post: request error")
+            completion(.failure(HttpError.invalidRequest))
             return
         }
         execute(request: request, completion: completion)
@@ -24,6 +32,7 @@ struct Http {
     func get(path: String, completion: @escaping ResponseHandler) {
         guard let request = request(path: path, method:  "GET", body: nil) else{
             Logger.sharedInstance.log(msg:"quin http get: request error")
+            completion(.failure(HttpError.invalidRequest))
             return
         }
         execute(request: request, completion: completion)
@@ -36,43 +45,47 @@ struct Http {
         }
         var request = URLRequest(url: url)
         request.httpMethod = method
-        if (body != nil) {
+        if let body = body {
             request.httpBody = body
         }
+        
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")
-        request.addValue(Http.configuration.domain!, forHTTPHeaderField: "Origin")
-        request.addValue(Http.configuration.apiKey!, forHTTPHeaderField: "X-Api-Key")
+        request.addValue(Http.configuration.domain, forHTTPHeaderField: "Origin")
+        request.addValue(Http.configuration.apiKey, forHTTPHeaderField: "X-Api-Key")
         Logger.sharedInstance.log(msg: request.url?.description ?? "")
         return request
     }
     
     func execute(request: URLRequest, completion: @escaping ResponseHandler) {
-        URLSession.shared.dataTask(with: request) {
-            (data, response, error) in
-            guard let statusCode = ((response as? HTTPURLResponse)?.statusCode) else{
-                Logger.sharedInstance.log(msg:"quin httpHandler: error statusCode could not be retreived")
+        URLSession.shared.dataTask(with: request){ data,response, error in
+            if let error = error{
+                Logger.sharedInstance.log(msg: "quin httpHandler: network error: \(error.localizedDescription)")
+                completion(.failure(error))
                 return
             }
-            if let error = error {
-                Logger.sharedInstance.log(msg:"quin httpHandler: error: \(error.localizedDescription)")
+            guard let httpResponse = response as? HTTPURLResponse else {
+                Logger.sharedInstance.log(msg: "quin httpHandler: invalid response type")
+                completion(.failure(HttpError.invalidResponse))
                 return
             }
-            if statusCode != 200 {
-                Logger.sharedInstance.log(msg:"quin httpHandler: error statusCode: \(statusCode)")
+            guard (200...299).contains(httpResponse.statusCode) else{
+                Logger.sharedInstance.log(msg: "quin httpHandler: error statusCode: \(httpResponse.statusCode)")
+                completion(.failure(HttpError.httpError(statusCode: httpResponse.statusCode)))
                 return
             }
-            guard let data=data else{
-                Logger.sharedInstance.log(msg:"quin httpHandler: data is nil")
+            guard let data = data else{
+                Logger.sharedInstance.log(msg: "quin httpHandler: data is nil")
+                completion(.failure(HttpError.invalidResponse))
                 return
             }
-            do {
+            do{
                 let res = try JSONDecoder().decode(Response.self, from: data)
-                Logger.sharedInstance.log(msg:"quin response:\(res)")
-                completion(res)
-            }
-            catch{
-                Logger.sharedInstance.log(msg:"quin httpHandler: encode error: \(error)")
+                Logger.sharedInstance.log(msg: "quin response: \(res)")
+                completion(.success(res))
+            }catch{
+                Logger.sharedInstance.log(msg:  "quin httpHandler: decode error: \(error.localizedDescription)")
+                completion(.failure(error))
             }
             
         }.resume()

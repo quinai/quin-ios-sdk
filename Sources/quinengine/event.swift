@@ -50,7 +50,7 @@ extension Event{
     public static let eCommerce = eCommerceEventImpl() as eCommerceEvent
 }
 
-enum EventCategory {
+enum EventCategory: String, Codable {
     case home,
          listing,
          detail,
@@ -61,7 +61,7 @@ enum EventCategory {
          reaction
 }
 
-enum EventLabel {
+enum EventLabel: String, Codable {
     case addtobasket,
          addtofavourites,
          productinfo,
@@ -81,110 +81,110 @@ enum EventLabel {
          purchasecompleted
 }
 
-enum EventAction {
+enum EventAction: String, Codable {
     case pageview,
          click
 }
 
 internal class eCommerceEventImpl : eCommerceEvent {
     func pageViewHomeEvent() -> Event{
-        return Event(category:"\(EventCategory.home)",
-                action: "\(EventAction.pageview)")
+        return Event(category:EventCategory.home.rawValue,
+                     action: EventAction.pageview.rawValue)
     }
     func pageViewListingEvent(label:String) -> Event{
-        return Event(category:"\(EventCategory.listing)",
-                     action: "\(EventAction.pageview)",
+        return Event(category: EventCategory.listing.rawValue,
+                     action: EventAction.pageview.rawValue,
                      label: label)
     }
     func pageViewListingWithCategoryIdEvent(label:String, categoryId: String) -> Event{
-        return Event(category:"\(EventCategory.listing)",
-                     action: "\(EventAction.pageview)",
+        return Event(category: EventCategory.listing.rawValue,
+                     action: EventAction.pageview.rawValue,
                      label: label).withCustomAttribute(key: "categoryId", value: categoryId)
     }
     func addToCartListingEvent(item: Item, quantity: Int) -> Event{
-        return Event(category:"\(EventCategory.listing)",
-                     action:"\(EventAction.click)",
-                     label: "\(EventLabel.addtobasket)",
+        return Event(category: EventCategory.listing.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.addtobasket.rawValue,
                      item: item).withCustomAttribute(key: "quantity", value: quantity.description)
     }
     func filterEvent() -> Event{
-        return Event(category:"\(EventCategory.listing)",
-                     action: "\(EventAction.click)")
+        return Event(category: EventCategory.listing.rawValue,
+                     action: EventAction.click.rawValue)
     }
     // Detail
     func pageViewDetailEvent(item: Item) -> Event{
-        return Event(category:"\(EventCategory.detail)",
-                     action: "\(EventAction.pageview)",
+        return Event(category: EventCategory.detail.rawValue,
+                     action: EventAction.pageview.rawValue,
                      label: item.getCategory(),
                      item: item).withCustomAttribute(key: "categoryId", value: item.getCategoryId())
     }
     func addToCartDetailEvent(item: Item, quantity: Int) -> Event{
-        return Event(category:"\(EventCategory.detail)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.addtobasket)",
+        return Event(category: EventCategory.detail.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.addtobasket.rawValue,
                      item: item).withCustomAttribute(key: "quantity", value: quantity.description)
     }
     func addToFavouritesEvent(item: Item) -> Event{
-        return Event(category:"\(EventCategory.detail)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.addtofavourites)",
+        return Event(category: EventCategory.detail.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.addtofavourites.rawValue,
                      item: item)
     }
     func productInfoEvent(item: Item) -> Event{
-        return Event(category:"\(EventCategory.detail)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.productinfo)",
+        return Event(category: EventCategory.detail.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.productinfo.rawValue,
                      item: item)
     }
     func deliveryInfoEvent(item: Item) -> Event{
-        return Event(category:"\(EventCategory.detail)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.deliveryinfo)",
+        return Event(category: EventCategory.detail.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.deliveryinfo.rawValue,
                      item: item)
     }
     func commentsEvent() -> Event{
-        return Event(category:"\(EventCategory.detail)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.comments)")
+        return Event(category: EventCategory.detail.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.comments.rawValue)
     }
     func quantityDetailEvent(item: Item, quantity: Int) -> Event{
-        return Event(category:"\(EventCategory.detail)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.quantity)",
+        return Event(category: EventCategory.detail.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.quantity.rawValue,
                      item: item).withCustomAttribute(key: "quantity", value: quantity.description)
     }
     // Cart
     func quantityCartEvent(item: Item, quantity: Int) -> Event{
-        return Event(category:"\(EventCategory.cart)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.quantity)",
+        return Event(category: EventCategory.cart.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.quantity.rawValue,
                      item: item).withCustomAttribute(key: "quantity", value: quantity.description)
     }
     func goToCartEvent() -> Event{
-        return Event(category:"\(EventCategory.cart)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.gotocart)")
+        return Event(category: EventCategory.cart.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.gotocart.rawValue)
     }
     func continueShoppingEvent() -> Event{
-        return Event(category:"\(EventCategory.cart)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.continueshopping)")
+        return Event(category: EventCategory.cart.rawValue,
+                     action:  EventAction.click.rawValue,
+                     label: EventLabel.continueshopping.rawValue)
     }
     func removeFromCartEvent(item: Item, quantity: Int) -> Event{
-        return Event(category:"\(EventCategory.cart)",
-                     action:"\(EventAction.click)",
-                     label: "\(EventLabel.removefromcart)",
+        return Event(category: EventCategory.cart.rawValue,
+                     action: EventAction.click.rawValue,
+                     label:  EventLabel.removefromcart.rawValue,
                      item: item).withCustomAttribute(key: "quantity", value: quantity.description)
     }
     func emptyCartEvent() -> Event{
-        return Event(category:"\(EventCategory.cart)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.emptycart)")
+        return Event(category: EventCategory.cart.rawValue,
+                     action:  EventAction.click.rawValue,
+                     label: EventLabel.emptycart.rawValue)
     }
     func checkoutEvent() -> Event{
-        return Event(category:"\(EventCategory.cart)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.checkout)")
+        return Event(category: EventCategory.cart.rawValue,
+                     action:  EventAction.click.rawValue,
+                     label: EventLabel.checkout.rawValue)
     }
     func loginEvent() -> Event{
         return Event(category:"\(EventCategory.checkout)",
@@ -192,36 +192,36 @@ internal class eCommerceEventImpl : eCommerceEvent {
                      label: "\(EventLabel.login)")
     }
     func discountCodeEvent(discountCode: String) -> Event{
-        return Event(category:"\(EventCategory.checkout)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.discountcode)")
+        return Event(category: EventCategory.checkout.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.discountcode.rawValue)
         .withCustomAttribute(key: "discountcode", value: discountCode)
     }
     func deliveryFeeEvent() -> Event{
-        return Event(category:"\(EventCategory.checkout)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.deliveryfee)")
+        return Event(category:EventCategory.checkout.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.deliveryfee.rawValue)
     }
     func adressEvent() -> Event{
-        return Event(category:"\(EventCategory.checkout)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.adress)")
+        return Event(category:EventCategory.checkout.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.adress.rawValue)
     }
     func paymentTypeEvent() -> Event{
-        return Event(category:"\(EventCategory.checkout)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.paymenttype)")
+        return Event(category:EventCategory.checkout.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.paymenttype.rawValue)
     }
     func purchaseCompletedEvent(totalBasketSize: Float) -> Event{
-        return Event(category:"\(EventCategory.checkout)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.purchasecompleted)")
+        return Event(category: EventCategory.checkout.rawValue,
+                     action:  EventAction.click.rawValue,
+                     label: EventLabel.purchasecompleted.rawValue)
         .withCustomAttribute(key: "totalbasketsize", value: totalBasketSize.description)
     }
     func addToCartServiceEvent(item: Item, quantity: Int) -> Event{
-        return Event(category:"\(EventCategory.service)",
-                     action: "\(EventAction.click)",
-                     label: "\(EventLabel.addtobasket)",
+        return Event(category: EventCategory.service.rawValue,
+                     action: EventAction.click.rawValue,
+                     label: EventLabel.addtobasket.rawValue,
                      item: item).withCustomAttribute(key: "quantity", value: quantity.description)
     }
 }

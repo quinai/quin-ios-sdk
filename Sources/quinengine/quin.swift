@@ -1,69 +1,118 @@
 import Foundation
-
-public struct Quin {
-    static let pathSession = "session"
-    static let pathEvent = "event"
-    static let pathTestEvent = "test-event"
+/// Main SDK class for interaction with Quin Engine
+public class Quin {
+    public static let pathSession = "session"
+    public static let pathEvent = "event"
+    public static let pathTestEvent = "test-event"
     
-    public static let sharedInstance = Quin()
+    private let queue: DispatchQueue
     
-    init() {
+    private static var instance: Quin?
+    private static let lock = NSLock()
+    /// Returns the shared singleton instance of Quin
+    /// - Parameter queue: Optional DispatchQueue for event tracking operations (defaults to background queue).
+    /// - Returns: A shared instance of Quin
+    public static func getInstance(queue: DispatchQueue = DispatchQueue(label: "com.quinengine")) -> Quin{
+        lock.lock()
+        defer {lock.unlock()}
+        if instance == nil{
+            instance = Quin(queue: queue)
+        }
+        return instance!
     }
     
-    public func setConfig(apiKey: String, domain: String, enableLogging: Bool = false) {
+    private init(queue: DispatchQueue){
+        self.queue = queue
+    }
+    
+    /// Sets configuration parameters for API usage
+    /// - Parameters:
+    ///     - apiKey: The API key provided by Quin,
+    ///     - domain: The domain (origin) for request validation
+    ///     - enableLogging: Enables or disables debug logging
+    public func setConfig(apiKey: String, domain: String, enableLogging: Bool = false){
         Http.setConfig(apiKey: apiKey, domain: domain)
-        Logger.setConfig(enableLogging:enableLogging)
+        Logger.setConfig(enableLogging: enableLogging)
     }
     
+    /// Sets the Google Client ID for the user sessions.
+    /// - Parameter googleClientId: A valid Google Client ID string.
     public func setUser(googleClientId: String) {
-        _ = self.user()
+        _ = self.user(googleClientId: googleClientId)
     }
     
-    public func track(event: Event, path: String = "event", completion:@escaping ActionHandler){
-        guard let user = self.user() else{
-            Logger.sharedInstance.log(msg:"quin track: user is nil")
-            return
-        }
-        let req = event.setUser(user:user)
-        guard let httpBody = try? JSONEncoder().encode(req) else {
-            Logger.sharedInstance.log(msg:"quin track: encode error")
-            return
-        }
-        Http.sharedInstance.post(path: path, body: httpBody){
-            response in saveUser(response: response)
-            completion(response?.content?.interaction)
+    /// Tracks an event by sending it to the server.
+    /// - Parameters:
+    ///   - event: The event to track.
+    ///   - path: The endpoint path for event submission (default is `event`).
+    ///   - completion: Callback with the resulting `Action?` from the server response.
+    public func track(event:Event, path: String = pathEvent, completion: @escaping ActionHandler){
+        queue.async {
+            guard let user = self.user() else{
+                Logger.sharedInstance.log(msg: "quin track: user is nil")
+                completion(nil)
+                return
+            }
+            let req = event.setUser(user: user)
+            guard let httpBody = try? JSONEncoder().encode(req) else{
+                Logger.sharedInstance.log(msg: "quin track: encode error")
+                completion(nil)
+                return
+            }
+            Http.sharedInstance.post(path: path, body: httpBody){result in
+                switch result {
+                case .success(let response):
+                    self.saveUser(response: response)
+                    completion(response.content?.interaction)
+                case .failure(let error):
+                    Logger.sharedInstance.log(msg: "quin track: network error: \(error.localizedDescription)")
+                    completion(nil)
+                }
+            }
+            
         }
     }
-    
-    func user(googleClientId: String? = nil) -> User? {
-        let user = UserStore.sharedInstance.load()
-        if user == nil {
-            let semaphore = DispatchSemaphore(value: 0)
-            Http.sharedInstance.post(path: Quin.pathSession, body: nil){
-                response in saveUser(response: response, googleClientId: googleClientId)
+    private func user(googleClientId: String? = nil) -> User?{
+        var result: User?
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        if UserStore.sharedInstance.load() == nil{
+            Http.sharedInstance.post(path: Quin.pathSession, body: nil){ postResult  in
+                switch postResult {
+                case .success(let response):
+                    self.saveUser(response: response, googleClientId: googleClientId)
+                case .failure(let error):
+                    Logger.sharedInstance.log(msg: "quin user session: network error: \(error.localizedDescription)")
+                }
                 semaphore.signal()
             }
             semaphore.wait()
         }
-        return UserStore.sharedInstance.load()
+        result = UserStore.sharedInstance.load()
+        return result
     }
     
-    func saveUser(response:Response?, googleClientId: String? = nil) {
-        guard let user = response?.content?.user() else{
-            Logger.sharedInstance.log(msg:"quin saveUser: response user is nil")
+    private func saveUser(response: Response, googleClientId: String? = nil){
+        guard let user = response.content?.user() else {
+            Logger.sharedInstance.log(msg: "quin saveUser: response user is nil")
             return
         }
         var modifiedUser = user
-        if googleClientId != nil {
-           modifiedUser = user.withGoogleClientId(googleClientId: googleClientId!)
+        if let id = googleClientId {
+            modifiedUser = user.withGoogleClientId(googleClientId: id)
         }
         UserStore.sharedInstance.save(user: modifiedUser)
     }
+    
+    private lazy var eCommerceImpl: ECommerceImpl = ECommerceImpl(instance: self)
+    
+    public func eCommerce() -> eCommerce {
+        return eCommerceImpl
+    }
+    
+    
 }
 
-extension Quin{
-    public static let eCommerce = eCommerceImpl(instance: sharedInstance) as eCommerce
-}
 
 public protocol eCommerce{
     func sendTestEvent(completion:@escaping ActionHandler)
@@ -93,11 +142,13 @@ public protocol eCommerce{
     func sendAddToCartServiceEvent(item:Item, quantity: Int, completion:@escaping ActionHandler)
 }
 
-internal class eCommerceImpl: eCommerce{
+internal class ECommerceImpl: eCommerce{
     private let instance: Quin
+    
     init(instance: Quin) {
         self.instance = instance
     }
+    
     public func sendTestEvent(completion:@escaping ActionHandler){
         instance.track(event: Event.eCommerce.pageViewHomeEvent(), path: Quin.pathTestEvent, completion: completion)
     }
