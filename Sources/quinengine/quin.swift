@@ -46,7 +46,7 @@ public class Quin {
     ///   - event: The event to track.
     ///   - path: The endpoint path for event submission (default is `event`).
     ///   - completion: Callback with the resulting `Action?` from the server response.
-    public func track(event:Event, path: String = pathEvent, completion: @escaping ActionHandler){
+    public func track(event:Event, path: String = pathEvent, completion: @escaping ActionHandler, experience: @escaping ExperienceHandler){
         queue.async {
             guard let user = self.user() else{
                 Logger.sharedInstance.log(msg: "quin track: user is nil")
@@ -64,6 +64,7 @@ public class Quin {
                 case .success(let response):
                     self.saveUser(response: response)
                     completion(response.content?.interaction)
+                    experience(response.content?.experienceInteraction)
                 case .failure(let error):
                     Logger.sharedInstance.log(msg: "quin track: network error: \(error.localizedDescription)")
                     completion(nil)
@@ -115,31 +116,31 @@ public class Quin {
 
 
 public protocol eCommerce{
-    func sendTestEvent(completion:@escaping ActionHandler)
-    func sendPageViewHomeEvent(completion:@escaping ActionHandler)
-    func sendPageViewListingEvent(label:String,completion:@escaping ActionHandler)
-    func sendPageViewListingWithCategoryIdEvent(label:String, categoryId: String, completion:@escaping ActionHandler)
-    func sendAddToCartListingEvent(item:Item, quantity: Int, completion:@escaping ActionHandler)
-    func sendFilterEvent(completion:@escaping ActionHandler)
-    func sendPageViewDetailEvent(item:Item, completion:@escaping ActionHandler)
-    func sendAddToCartDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler)
-    func sendAddToFavouritesEvent(item:Item, completion:@escaping ActionHandler)
-    func sendProductInfoEvent(item:Item, completion:@escaping ActionHandler)
-    func sendCommentsEvent(completion:@escaping ActionHandler)
-    func sendQuantityDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler)
-    func sendQuantityCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler)
-    func sendGoToCartEvent(completion:@escaping ActionHandler)
-    func sendContinueShoppingEvent(completion:@escaping ActionHandler)
-    func sendRemoveFromCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler)
-    func sendEmptyCartEvent(completion:@escaping ActionHandler)
-    func sendCheckoutEvent(completion:@escaping ActionHandler)
-    func sendLoginEvent(completion:@escaping ActionHandler)
-    func sendDiscountCodeEvent(discountCode:String, completion:@escaping ActionHandler)
-    func sendDeliveryFeeEvent(completion:@escaping ActionHandler)
-    func sendAdressEvent(completion:@escaping ActionHandler)
-    func sendPaymentTypeEvent(completion:@escaping ActionHandler)
-    func sendPurchaseCompletedEvent(totalBasketSize:Float, completion:@escaping ActionHandler)
-    func sendAddToCartServiceEvent(item:Item, quantity: Int, completion:@escaping ActionHandler)
+    func sendTestEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendPageViewHomeEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendPageViewListingEvent(label:String,completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendPageViewListingWithCategoryIdEvent(label:String, categoryId: String, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendAddToCartListingEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendFilterEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendPageViewDetailEvent(item:Item, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendAddToCartDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendAddToFavouritesEvent(item:Item, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendProductInfoEvent(item:Item, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendCommentsEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendQuantityDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendQuantityCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendGoToCartEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendContinueShoppingEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendRemoveFromCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendEmptyCartEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendCheckoutEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendLoginEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendDiscountCodeEvent(discountCode:String, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendDeliveryFeeEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendAdressEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendPaymentTypeEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendPurchaseCompletedEvent(totalBasketSize:Float, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+    func sendAddToCartServiceEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
 }
 
 internal class ECommerceImpl: eCommerce{
@@ -149,79 +150,79 @@ internal class ECommerceImpl: eCommerce{
         self.instance = instance
     }
     
-    public func sendTestEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.pageViewHomeEvent(), path: Quin.pathTestEvent, completion: completion)
+    public func sendTestEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.pageViewHomeEvent(), path: Quin.pathTestEvent, completion: completion, experience: experience)
     }
-    public func sendPageViewHomeEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.pageViewHomeEvent(), completion: completion)
+    public func sendPageViewHomeEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.pageViewHomeEvent(), completion: completion, experience: experience)
     }
-    public func sendPageViewListingEvent(label:String, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.pageViewListingEvent(label: label), completion: completion)
+    public func sendPageViewListingEvent(label:String, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.pageViewListingEvent(label: label), completion: completion, experience: experience)
     }
-    public func sendPageViewListingWithCategoryIdEvent(label:String, categoryId:String, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.pageViewListingWithCategoryIdEvent(label: label, categoryId: categoryId), completion: completion)
+    public func sendPageViewListingWithCategoryIdEvent(label:String, categoryId:String, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.pageViewListingWithCategoryIdEvent(label: label, categoryId: categoryId), completion: completion, experience: experience)
     }
-    public func sendAddToCartListingEvent(item:Item, quantity: Int, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.addToCartListingEvent(item: item, quantity: quantity), completion: completion)
+    public func sendAddToCartListingEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.addToCartListingEvent(item: item, quantity: quantity), completion: completion, experience: experience)
     }
-    public func sendFilterEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.filterEvent(), completion: completion)
+    public func sendFilterEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.filterEvent(), completion: completion, experience: experience)
     }
-    public func sendPageViewDetailEvent(item:Item, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.pageViewDetailEvent(item:item), completion: completion)
+    public func sendPageViewDetailEvent(item:Item, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.pageViewDetailEvent(item:item), completion: completion, experience: experience)
     }
-    public func sendAddToCartDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.addToCartDetailEvent(item: item, quantity: quantity), completion: completion)
+    public func sendAddToCartDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.addToCartDetailEvent(item: item, quantity: quantity), completion: completion, experience: experience)
     }
-    public func sendAddToFavouritesEvent(item:Item, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.addToFavouritesEvent(item:item), completion: completion)
+    public func sendAddToFavouritesEvent(item:Item, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.addToFavouritesEvent(item:item), completion: completion, experience: experience)
     }
-    public func sendProductInfoEvent(item:Item, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.productInfoEvent(item: item), completion: completion)
+    public func sendProductInfoEvent(item:Item, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.productInfoEvent(item: item), completion: completion, experience: experience)
     }
-    public func sendCommentsEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.commentsEvent(), completion: completion)
+    public func sendCommentsEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.commentsEvent(), completion: completion, experience: experience)
     }
-    public func sendQuantityDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.quantityDetailEvent(item: item, quantity: quantity), completion: completion)
+    public func sendQuantityDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.quantityDetailEvent(item: item, quantity: quantity), completion: completion, experience: experience)
     }
-    public func sendQuantityCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.quantityCartEvent(item: item, quantity: quantity), completion: completion)
+    public func sendQuantityCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.quantityCartEvent(item: item, quantity: quantity), completion: completion, experience: experience)
     }
-    public func sendGoToCartEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.goToCartEvent(), completion: completion)
+    public func sendGoToCartEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.goToCartEvent(), completion: completion, experience: experience)
     }
-    public func sendContinueShoppingEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.continueShoppingEvent(), completion: completion)
+    public func sendContinueShoppingEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.continueShoppingEvent(), completion: completion, experience: experience)
     }
-    public func sendRemoveFromCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.removeFromCartEvent(item: item, quantity: quantity), completion: completion)
+    public func sendRemoveFromCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.removeFromCartEvent(item: item, quantity: quantity), completion: completion, experience: experience)
     }
-    public func sendEmptyCartEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.emptyCartEvent(), completion: completion)
+    public func sendEmptyCartEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.emptyCartEvent(), completion: completion, experience: experience)
     }
-    public func sendCheckoutEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.checkoutEvent(), completion: completion)
+    public func sendCheckoutEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.checkoutEvent(), completion: completion, experience: experience)
     }
-    public func sendLoginEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.loginEvent(), completion: completion)
+    public func sendLoginEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.loginEvent(), completion: completion, experience: experience)
     }
-    public func sendDiscountCodeEvent(discountCode:String, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.discountCodeEvent(discountCode: discountCode), completion: completion)
+    public func sendDiscountCodeEvent(discountCode:String, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.discountCodeEvent(discountCode: discountCode), completion: completion, experience: experience)
     }
-    public func sendDeliveryFeeEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.deliveryFeeEvent(), completion: completion)
+    public func sendDeliveryFeeEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.deliveryFeeEvent(), completion: completion, experience: experience)
     }
-    public func sendAdressEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.adressEvent(), completion: completion)
+    public func sendAdressEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.adressEvent(), completion: completion, experience: experience)
     }
-    public func sendPaymentTypeEvent(completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.paymentTypeEvent(), completion: completion)
+    public func sendPaymentTypeEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.paymentTypeEvent(), completion: completion, experience: experience)
     }
-    public func sendPurchaseCompletedEvent(totalBasketSize:Float, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.purchaseCompletedEvent(totalBasketSize: totalBasketSize), completion: completion)
+    public func sendPurchaseCompletedEvent(totalBasketSize:Float, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.purchaseCompletedEvent(totalBasketSize: totalBasketSize), completion: completion, experience: experience)
     }
-    public func sendAddToCartServiceEvent(item:Item, quantity: Int, completion:@escaping ActionHandler){
-        instance.track(event: Event.eCommerce.addToCartServiceEvent(item: item, quantity: quantity), completion: completion)
+    public func sendAddToCartServiceEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler){
+        instance.track(event: Event.eCommerce.addToCartServiceEvent(item: item, quantity: quantity), completion: completion, experience: experience)
     }
 }

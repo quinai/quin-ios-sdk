@@ -147,12 +147,31 @@ StyleResponse {
     
 }
 
+```
+## Experience and Campaign
+
+public struct Campaign: Decodable {
+    public let paddle: Bool?
+    public let position: String?
+    public let contentType: String?
+    public let code: String?
+}
+
+public struct Experience: Decodable {
+    public let campaignContent: Campaign?
+    public let type: String?
+    public let promotionCode:String?
+}
+
+The `code` field within the campaign structure contains HTML code for the pop-up. You can display this HTML code using a `WebView` tool.
+
 ***
 
 SDK allows us to send events and recieve actions in result. There are 2 ways to send events to the Quin AI's backend service which are using predefined send event functions and creating custom events and sending them manually. These sending functions take a completion parameter as type of ActionHandler which is simply:
 
 ```swift
 typealias ActionHandler = (Action?) -> Void
+public typealias ExperienceHandler = (Experience?) -> Void
 ```
 
 You can pass completions to those functions and use resulted actions in your code.
@@ -163,30 +182,31 @@ In Quin we have a set of predefined event sender functions that require minimum 
 Functions that send predefined events by Quin SDK are listed below.
 
 ```swift
-sendPageViewHomeEvent(completion:@escaping ActionHandler)
-sendPageViewListingEvent(label: String, completion:@escaping ActionHandler)
-sendPageViewListingWithCategoryIdEvent(label:String, categoryId: String, completion:@escaping ActionHandler)
-sendAddToCartListingEvent(item: Item?, quantity: Int, completion:@escaping ActionHandler)
-sendFilterEvent(completion:@escaping ActionHandler)
-sendPageViewDetailEvent(item: Item?, completion:@escaping ActionHandler)
-sendAddToCartDetailEvent(item: Item?, quantity: Int, completion:@escaping ActionHandler)
-sendAddToFavouritesEvent(item: Item?, completion:@escaping ActionHandler)
-sendProductInfoEvent(item: Item?, completion:@escaping ActionHandler)
-sendCommentsEvent(completion:@escaping ActionHandler)
-sendQuantityDetailEvent(item: Item?, quantity: Int, completion:@escaping ActionHandler)
-sendQuantityCartEvent(item: Item?, quantity: Int, completion:@escaping ActionHandler)
-sendGoToCartEvent(completion:@escaping ActionHandler)
-sendContinueShoppingEvent(completion:@escaping ActionHandler)
-sendRemoveFromCartEvent(item: Item?, quantity: Int, completion:@escaping ActionHandler)
-sendEmptyCartEvent(completion:@escaping ActionHandler)
-sendCheckoutEvent(completion:@escaping ActionHandler)
-sendLoginEvent(completion:@escaping ActionHandler)
-sendDiscountCodeEvent(discountCode: String, completion:@escaping ActionHandler)
-sendDeliveryFeeEvent(completion:@escaping ActionHandler)
-sendAddressEvent(completion:@escaping ActionHandler)
-sendPaymentTypeEvent(completion:@escaping ActionHandler)
-sendPurchaseCompletedEvent(totalBasketSize: Float, completion:@escaping ActionHandler)
-sendAddToCartServiceEvent(item: Item?, quantity: Int, completion:@escaping ActionHandler)
+sendTestEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendPageViewHomeEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendPageViewListingEvent(label:String,completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendPageViewListingWithCategoryIdEvent(label:String, categoryId: String, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendAddToCartListingEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendFilterEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendPageViewDetailEvent(item:Item, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendAddToCartDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendAddToFavouritesEvent(item:Item, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendProductInfoEvent(item:Item, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendCommentsEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendQuantityDetailEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendQuantityCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendGoToCartEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendContinueShoppingEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendRemoveFromCartEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendEmptyCartEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendCheckoutEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendLoginEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendDiscountCodeEvent(discountCode:String, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendDeliveryFeeEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendAdressEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendPaymentTypeEvent(completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendPurchaseCompletedEvent(totalBasketSize:Float, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
+sendAddToCartServiceEvent(item:Item, quantity: Int, completion:@escaping ActionHandler,experience: @escaping ExperienceHandler)
 ```
 
 All predefined functions above are defined inside e-commerce interface to create an abstraction to users. You can simply send events from interface variable inside Quin singleton class. Following lines explain how to use them. 

@@ -14,6 +14,7 @@ public struct Content: Decodable {
     var token: String
     var googleClientId : String?
     var interaction: Action?
+    var experienceInteraction: Experience?
     func user() -> User {
         User(id: userId, token: token, googleClientId: googleClientId ?? "")
     }
